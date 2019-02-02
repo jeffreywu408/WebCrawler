@@ -35,23 +35,35 @@ public class WebCrawler {
     private static int id;
 
     public static boolean isRobotSafe(URL url) {
-        String robots = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
+        String robots = url.getProtocol() + "://"
+                + url.getHost() + "/robots.txt";
         String path = url.getFile();
 
         try {
             // Read the robots.txt line by line
-            BufferedReader br = new BufferedReader(new InputStreamReader(new URL(robots).openStream()));
+            BufferedReader br =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    new URL(robots).openStream()
+                            )
+                    );
+
             String line;
 
             while ((line = br.readLine()) != null) {
-                String robotAgent = line.replaceAll("[ \\-:]", "").toLowerCase();
+                String robotAgent =
+                        line.replaceAll("[ \\-:]", "").toLowerCase();
 
                 if (robotAgent.startsWith("useragent")) {
-                    robotAgent = robotAgent.substring("useragent".length()).toLowerCase().replace("*", ".*");
+                    robotAgent = robotAgent.substring(
+                            "useragent".length()
+                    ).toLowerCase().replace("*", ".*");
                 }
 
                 if (Pattern.matches(robotAgent, userAgent)) {
-                    while ((line = br.readLine()) != null && !line.trim().isEmpty()) {
+                    while ( (line = br.readLine()) != null
+                            && !line.trim().isEmpty() ) {
+
                         String[] temp = line.toLowerCase().trim().split(":");
 
                         if (temp[0].trim().equalsIgnoreCase("allow")) {
@@ -60,11 +72,11 @@ public class WebCrawler {
                                 // temp[1] = temp[1].trim().replace("*", ".*");
 
                                 // Case insensitive
-                                temp[1] = temp[1].trim().toLowerCase().replace("*", ".*");
+                                temp[1] = temp[1].trim().toLowerCase().
+                                        replace("*", ".*");
                                 temp[1] = temp[1].replace("?", "\\?");
 
                                 if (temp[1].endsWith("$")) {
-                                    temp[1] = temp[1].substring(0, temp[1].length());
                                     Pattern p = Pattern.compile(temp[1]);
                                     Matcher m = p.matcher(path);
 
@@ -72,7 +84,6 @@ public class WebCrawler {
                                         return true;
 
                                 } else {
-                                    temp[1] = temp[1].substring(0, temp[1].length());
                                     Pattern p = Pattern.compile(temp[1]);
                                     Matcher m = p.matcher(path);
 
@@ -86,17 +97,19 @@ public class WebCrawler {
                             }
                         }
 
-                        if (temp[0].trim().equalsIgnoreCase("disallow") || temp[0].trim().equalsIgnoreCase("NoIndex")) {
+                        if (temp[0].trim().equalsIgnoreCase("disallow")
+                                || temp[0].trim().equalsIgnoreCase("NoIndex")) {
+
                             if (temp.length > 1) {
                                 // Case sensitive
                                 // temp[1] = temp[1].trim().replace("*", ".*");
 
                                 // Case insensitive
-                                temp[1] = temp[1].trim().toLowerCase().replace("*", ".*");
+                                temp[1] = temp[1].trim().toLowerCase().
+                                        replace("*", ".*");
                                 temp[1] = temp[1].replace("?", "\\?");
 
                                 if (temp[1].endsWith("$")) {
-                                    temp[1] = temp[1].substring(0, temp[1].length());
                                     Pattern p = Pattern.compile(temp[1]);
                                     Matcher m = p.matcher(path);
 
@@ -104,7 +117,6 @@ public class WebCrawler {
                                         return false;
 
                                 } else {
-                                    temp[1] = temp[1].substring(0, temp[1].length());
                                     Pattern p = Pattern.compile(temp[1]);
                                     Matcher m = p.matcher(path);
 
@@ -128,8 +140,12 @@ public class WebCrawler {
         return true;
     }
 
-    public static void appendReport(Response resp, String url, String report, String repository, int totalOutboundLinks,
-            int outboundLinks) {
+    public static void appendReport(Response resp,
+                                    String url,
+                                    String report,
+                                    String repository,
+                                    int totalOutboundLinks,
+                                    int outboundLinks) {
         try {
             Document doc = resp.parse();
             int statusCode = resp.statusCode();
@@ -137,17 +153,24 @@ public class WebCrawler {
             FileWriter fw = new FileWriter(report, true);
             try (BufferedWriter out = new BufferedWriter(fw)) {
                 // Link to the live URL
-                out.write("<p><div><a href = " + url + ">" + doc.title() + "</a> (" + url + ")</div>");
+                out.write("<p><div><a href = " + url + ">" + doc.title()
+                        + "</a> (" + url + ")</div>");
 
                 // Link to the downloaded page in the repository
-                String fileLocation = "file:///" + System.getProperty("user.dir") + "/" + repository + "/" + (id - 1)
-                        + ".html";
-                out.write("<div><a href = " + fileLocation + ">Repository Link</a></div>");
+                String fileLocation = "file:///"
+                        + System.getProperty("user.dir") + "/" + repository
+                        + "/" + (id - 1) + ".html";
+                out.write("<div><a href = " + fileLocation
+                        + ">Repository Link</a></div>");
 
-                // Page statistics: HTTP status code, number of out-links, number of images
-                out.write("<div>HTTP Status Code: " + statusCode + "</div>");
-                out.write("<div>Outbound Links: " + totalOutboundLinks + "</div>");
-                out.write("<div>Outbound Links (domain restricted): " + outboundLinks + "</div>");
+                // Page statistics:
+                // HTTP status code, number of out-links, number of images
+                out.write("<div>HTTP Status Code: "
+                        + statusCode + "</div>");
+                out.write("<div>Outbound Links: "
+                        + totalOutboundLinks + "</div>");
+                out.write("<div>Outbound Links (domain restricted): "
+                        + outboundLinks + "</div>");
 
                 Elements images = doc.getElementsByTag("img");
                 out.write("<div>Number of Images: " + images.size() + "</div>");
@@ -159,10 +182,12 @@ public class WebCrawler {
         }
     }
 
-    public static void crawlPage(String url, int numberLinks, String domain, String repository, String report) {
+    public static void crawlPage(String url, int numberLinks, String domain,
+                                 String repository, String report) {
         try {
             if (!isRobotSafe(new URL(url))) {
-                System.out.println("This page is not allowed to be crawled: " + url);
+                System.out.println(
+                        "This page is not allowed to be crawled: " + url);
                 return;
             }
 
@@ -184,8 +209,10 @@ public class WebCrawler {
 
             // Get all links and add them to the queue
             Elements questions = doc.select("a[href]");
-            int totalOutboundLinks = questions.size(); // Total number of outbound links
-            int outboundLinks = 0; // Counter of outbound links restricted to the provided domain
+            // Total number of outbound links
+            int totalOutboundLinks = questions.size();
+            // Counter of outbound links restricted to the provided domain
+            int outboundLinks = 0;
 
             for (Element link : questions) {
                 if (link.attr("abs:href").contains(domain)) {
@@ -195,7 +222,8 @@ public class WebCrawler {
             }
 
             // Update report
-            appendReport(response, url, report, repository, totalOutboundLinks, outboundLinks);
+            appendReport(response, url, report, repository,
+                    totalOutboundLinks, outboundLinks);
 
             // Visit page in queue
             while (!queue.isEmpty()) {
@@ -225,8 +253,10 @@ public class WebCrawler {
                 // Update report
                 out = new BufferedWriter(new FileWriter(report, true));
 
-                out.write("<p><div><a href = " + url + ">" + url + "</a> (" + url + ")</div>");
-                out.write("<div>HTTP Status Code: " + e.getStatusCode() + "</div>");
+                out.write("<p><div><a href = " + url + ">"
+                        + url + "</a> (" + url + ")</div>");
+                out.write("<div>HTTP Status Code: "
+                        + e.getStatusCode() + "</div>");
                 out.write("</p>");
 
                 out.close();
@@ -242,7 +272,7 @@ public class WebCrawler {
         }
     }
 
-    public static void crawl(String fileName, String repository, String report) {
+    public static void crawl(String fileName, String repo, String report) {
         // Initialization
         String url = "http://stackexchange.com";
         String domain = "";
@@ -272,21 +302,27 @@ public class WebCrawler {
         System.out.println("Domain Restriction: " + domain + "\n");
 
         // Repository for storing downloaded pages
-        new File(repository).mkdirs();
+        new File(repo).mkdirs();
 
         // Initialize report
         try (PrintWriter writer = new PrintWriter(report, "UTF-8")) {
             writer.println("<p>Web Crawler</p>");
-            writer.println("<div>Seed: <a href=" + url + ">" + url + "</a></div>");
-            writer.println("<div>Max number of pages: " + maxPages + "</div>");
-            writer.println("<div>Domain Restriction: " + domain + "</div>");
+
+            writer.println("<div>Seed: <a href=" + url + ">"
+                    + url + "</a></div>");
+
+            writer.println("<div>Max number of pages: "
+                    + maxPages + "</div>");
+
+            writer.println("<div>Domain Restriction: "
+                    + domain + "</div>");
 
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             System.out.println(e);
         }
 
         // Start crawling
-        crawlPage(url, maxPages, domain, repository, report);
+        crawlPage(url, maxPages, domain, repo, report);
     }
 
     public static void main(String[] args) {
